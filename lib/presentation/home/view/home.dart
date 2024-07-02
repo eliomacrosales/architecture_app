@@ -47,13 +47,13 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 TextButton(
                   onPressed: () {
-                    ref.read(localeStateProvider('es').notifier).setLocale(const Locale('es'));
+                    ref.read(localeStateProvider.notifier).setLocale(const Locale('es'));
                   },
                   child: Text('ES', style: TextStyle(color: context.theme.appColors.primary20)),
                 ),
                 TextButton(
                   onPressed: () {
-                    ref.read(localeStateProvider('en').notifier).setLocale(const Locale('en'));
+                    ref.read(localeStateProvider.notifier).setLocale(const Locale('en'));
                   },
                   child: const Text('US'),
                 ),

@@ -22,7 +22,7 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final localeProvider = ref.watch(localeStateProvider(locale));
+    final localeProvider = ref.watch(localeStateProvider);
     final themeProvider = ref.watch(themeStateProvider);
 
     return MaterialApp.router(

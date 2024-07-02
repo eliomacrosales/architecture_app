@@ -6,9 +6,10 @@ part 'local_state_provider.g.dart';
 
 @riverpod
 class LocaleState extends _$LocaleState {
+
   @override
-  Locale build(String locale) {
-    return Locale(locale);
+  Locale build() {
+    return const Locale('es');
   }
 
   void setLocale(Locale locale) async {
