@@ -1,5 +1,7 @@
 import 'package:architecture/config/init_app_config.dart';
 import 'package:architecture/config/localization/locale_provider/locale_provider.dart';
+import 'package:architecture/config/theme/theme_manager/theme_dark.dart';
+import 'package:architecture/config/theme/theme_manager/theme_light.dart';
 import 'package:architecture/config/theme/theme_provider/theme_provider.dart';
 import 'package:architecture/core/networking/dio_client.dart';
 import 'package:architecture/core/routes/app_router.dart';
@@ -11,14 +13,13 @@ import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final locale = await InitAppConfig.initialize();
+  await InitAppConfig.initializeApp();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider(locale)),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) =>  ThemeProvider(InitAppConfig.themeMode)),
+        ChangeNotifierProvider<LocaleProvider>(create: (_) => LocaleProvider(InitAppConfig.locale)),
         Provider<RepositoryInterface>(
           create: (_) {
             RepositoryInterface repositoryInterface = RepositoryImpl(dioClient: DioClient());
@@ -38,8 +39,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Flutter Demo',
-      theme: ThemeProvider.light,
-      darkTheme: ThemeProvider.dark,
+      theme: ThemeLight.lightTheme,
+      darkTheme: ThemeDark.darkTheme,
       themeMode: context.watch<ThemeProvider>().themeMode,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [

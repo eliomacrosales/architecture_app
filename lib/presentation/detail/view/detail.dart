@@ -24,7 +24,7 @@ class _DetailScreenState extends State<DetailScreen> {
   late HomeController homeController;
 
   void updateThemeMode(ThemeMode themeMode) {
-    context.read<ThemeProvider>().themeMode = themeMode;
+    context.read<ThemeProvider>().setThemeMode(themeMode);
   }
 
   @override
