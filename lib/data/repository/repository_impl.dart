@@ -27,7 +27,7 @@ class RepositoryImpl with ApiErrorHandler implements RepositoryInterface {
 
   /// peticiones al API
   @override
-  Future<APIResponse<Token>> login({
+  Future<Token> login({
     required String username,
     required String password,
     required String grantType,
@@ -44,5 +44,5 @@ class RepositoryImpl with ApiErrorHandler implements RepositoryInterface {
           login: true);
 
   @override
-  Future<APIResponse<User>> fetchUser() async => await executeApiCall(_service.fetchUser());
+  Future<User> fetchUser() async => await executeApiCall(_service.fetchUser());
 }

@@ -1,20 +1,16 @@
-import 'package:architecture/config/theme/theme_manager/theme_dark.dart';
-import 'package:architecture/config/theme/theme_manager/theme_light.dart';
 import 'package:flutter/material.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.system;
+part 'theme_provider.g.dart';
 
-  ThemeMode get themeMode => _themeMode;
-
-  set themeMode(ThemeMode themeMode) {
-    _themeMode = themeMode;
-    notifyListeners();
+@riverpod
+class ThemeState extends _$ThemeState {
+  @override
+  ThemeMode build() {
+    return ThemeMode.system;
   }
 
-  /// Light theme
-  static final light = ThemeLight.lightTheme;
-
-  /// Dark theme
-  static final dark = ThemeDark.darkTheme;
+  set themeMode(ThemeMode themeMode) {
+    state = themeMode;
+  }
 }

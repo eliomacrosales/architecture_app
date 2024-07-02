@@ -9,7 +9,7 @@ part 'remote_api_service.g.dart';
 abstract class RemoteApiService {
   factory RemoteApiService(Dio dio) = _RemoteApiService;
 
-  @POST("/auth/realms/Ferag/protocol/openid-connect/token")
+  @POST("/realms/ferag/protocol/openid-connect/token")
   @FormUrlEncoded()
   Future<Token> login({
     @Field("username") required String username,

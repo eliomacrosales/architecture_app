@@ -1,53 +1,24 @@
-import 'package:architecture/config/localization/locale_provider/locale_provider.dart';
+import 'package:architecture/config/localization/locale_provider/local_state_provider.dart';
 import 'package:architecture/config/theme/theme_provider/theme_provider.dart';
 import 'package:architecture/core/constants/app_routes.dart';
 import 'package:architecture/core/extensions/localization_extension.dart';
 import 'package:architecture/core/extensions/theme_extension.dart';
 import 'package:architecture/core/extensions/typography_extension.dart';
-import 'package:architecture/core/networking/api_response.dart';
-import 'package:architecture/domain/models/user/user.dart';
-import 'package:architecture/domain/repository/repository_interface.dart';
 import 'package:architecture/presentation/design_system/atoms/svg_icon.dart';
-import 'package:architecture/presentation/design_system/templates/base_view_template.dart';
-import 'package:architecture/presentation/design_system/templates/template_ui_states.dart';
 import 'package:architecture/presentation/home/controller/home_controller.dart';
 import 'package:architecture/utils/app_icon/app_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appColor = context.theme.appColors;
+    final userAsyncValue = ref.watch(homeControllerProvider);
 
-class _HomeScreenState extends State<HomeScreen> {
-  late HomeController homeController;
-
-  void updateThemeMode(ThemeMode themeMode) {
-    context.read<ThemeProvider>().themeMode = themeMode;
-  }
-
-  void changeLanguage(Locale locale) {
-    context.read<LocaleProvider>().setLocale(locale);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    homeController = HomeController(context.read<RepositoryInterface>());
-    return BaseViewTemplate<HomeController>(
-      controller: homeController,
-      initPage: (HomeController controller) {
-        controller.fetchUser();
-      },
-      builder: _builder,
-    );
-  }
-
-  Widget _builder(BuildContext context, HomeController controller, Widget? child) {
-    final appColor =  context.theme.appColors;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: context.theme.appColors.primary20,
@@ -57,59 +28,63 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            TemplateUIStates<APIResponse<User>>(
-                isLoading: controller.isLoading,
-                data: controller.user,
-                loadingBuilder: () => Center(child: CircularProgressIndicator()),
-                dataBuilder: (user) => Text(
-                      user.data!.fullName,
-                      style:
-                          context.appTypography.heading1_28Regular.copyWith(color: appColor.primary20),
-                    ),
-                errorBuilder: (error) => Text(error!, style: TextStyle(color: Colors.red))),
-
-            // controller.isLoading ? Center(child: CircularProgressIndicator()) : controller.user.error
-            //     ? Text('error')
-            //     : Text(
-            //     controller.user.data!.fullName,
-            //     // context.localization.continueBtn,
-            //     style: context.appTypography.heading1_28Regular.copyWith(color: context.theme.appColors.primary20)
-            // ),
+            userAsyncValue.when(
+              data: (user) => Center(
+                child: Text(
+                  user.fullName,
+                  style: context.appTypography.heading1_28Regular.copyWith(color: appColor.primary20),
+                ),
+              ),
+              loading: () => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              error: (error, stack) => Center(
+                child: Text('Error: $error'),
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                  onPressed: () => updateThemeMode(ThemeMode.light),
-                  child: Text('Light', style: TextStyle(color: context.theme.appColors.primary20)),
+                  onPressed: () {
+                    ref.read(localeStateProvider('es').notifier).setLocale(const Locale('es'));
+                  },
+                  child: Text('ES', style: TextStyle(color: context.theme.appColors.primary20)),
                 ),
                 TextButton(
-                  onPressed: () => updateThemeMode(ThemeMode.dark),
-                  child: const Text('Dark'),
-                ),
-                TextButton(
-                  onPressed: () => updateThemeMode(ThemeMode.system),
-                  child: const Text('System'),
+                  onPressed: () {
+                    ref.read(localeStateProvider('en').notifier).setLocale(const Locale('en'));
+                  },
+                  child: const Text('US'),
                 ),
               ],
             ),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                  onPressed: () => changeLanguage(const Locale('es')),
-                  child: Text('ES', style: TextStyle(color: context.theme.appColors.primary20)),
+                  onPressed: () {
+                    ref.read(themeStateProvider.notifier).themeMode = ThemeMode.light;
+                  },
+                  child: Text('Light', style: TextStyle(color: context.theme.appColors.primary20)),
                 ),
-
                 TextButton(
-                  onPressed: () => changeLanguage(const Locale('en')),
-                  child: const Text('US'),
+                  onPressed: () {
+                    ref.read(themeStateProvider.notifier).themeMode = ThemeMode.dark;
+                  },
+                  child: const Text('Dark'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    ref.read(themeStateProvider.notifier).themeMode = ThemeMode.system;
+                  },
+                  child: const Text('System'),
                 ),
               ],
             ),
             const SizedBox(height: 10),
             GestureDetector(
-              onTap: (){
+              onTap: () {
                 context.pushNamed(AppRoutes.detail);
               },
               child: SvgIcon(
@@ -122,10 +97,5 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  @override
-  void dispose() {
-    homeController.disposeResources();
-    super.dispose();
-  }
 }
+

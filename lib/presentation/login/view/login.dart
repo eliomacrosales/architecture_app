@@ -1,86 +1,77 @@
-import 'package:architecture/core/constants/app_routes.dart';
-import 'package:architecture/core/extensions/localization_extension.dart';
-import 'package:architecture/core/extensions/theme_extension.dart';
-import 'package:architecture/core/extensions/typography_extension.dart';
-import 'package:architecture/core/networking/api_response.dart';
-import 'package:architecture/domain/models/token/token.dart';
-import 'package:architecture/domain/repository/repository_interface.dart';
-import 'package:architecture/presentation/design_system/templates/base_view_template.dart';
 import 'package:architecture/presentation/login/controller/login_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _userController = TextEditingController();
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  late LoginController loginController;
-
-  Future<void> _login() async {
-    final String user = _userController.text;
-    final String password = _passwordController.text;
-
-    APIResponse<Token> result = await loginController.login(user: user, password: password);
-
-    if(result.error){
-      print('error en el login');
-      print(result.errorMessage);
-    }
-    else{
-      context.goNamed(AppRoutes.home);
-    }
-  }
-
-  @override
-  void dispose() {
-    loginController.disposeResources();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    loginController = LoginController(context.read<RepositoryInterface>());
-    return BaseViewTemplate<LoginController>(
-      controller: loginController,
-      builder: _builder,
-    );
-  }
+    final loginState = ref.watch(loginControllerProvider);
+    final loginNotifier = ref.read(loginControllerProvider.notifier);
 
-  Widget _builder(BuildContext context, LoginController controller, Widget? child) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
+      appBar: AppBar(
+        title: const Text('Login'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextField(
-              controller: _userController,
-              decoration: InputDecoration(labelText: 'Usuario'),
+              controller: _usernameController,
+              decoration: const InputDecoration(labelText: 'Username'),
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Contraseña'),
+              decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
-            SizedBox(height: 20),
-            controller.isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                    onPressed: _login,
-                    child: Text(context.localization.login,
-                        style: context.appTypography.heading1_28Regular
-                            .copyWith(color: context.theme.appColors.primary20)),
-                  ),
+            const SizedBox(height: 20),
+            loginState.when(
+              data: (_) => ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await loginNotifier.login(
+                      user: _usernameController.text,
+                      password: _passwordController.text,
+                      context: context,
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.toString())),
+                    );
+                  }
+                },
+                child: const Text('Login'),
+              ),
+              loading: () => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              error: (error, stack) => Center(
+                child: Text('Error: $error'),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

@@ -1,45 +1,45 @@
 import 'package:architecture/config/environment/environment.dart';
-import 'package:architecture/core/networking/api_response.dart';
-import 'package:architecture/domain/models/token/token.dart';
+import 'package:architecture/core/constants/app_routes.dart';
+import 'package:architecture/core/error_handler/app_exception.dart';
 import 'package:architecture/domain/repository/repository_interface.dart';
-import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:architecture/core/dependency_injection/repository_provider/repository_provider.dart';
+import 'package:flutter/material.dart';
 
-class LoginController extends ChangeNotifier {
-  bool isLoading = false;
+part 'login_controller.g.dart';
 
+@riverpod
+class LoginController extends _$LoginController {
   late final RepositoryInterface _repository;
-  late SharedPreferences prefs;
 
-  LoginController(RepositoryInterface repository) {
-    _repository = repository;
+  @override
+  Future<void> build() async {
+    _repository = ref.read(repositoryProvider);
   }
 
- Future<APIResponse<Token>> login({required String user, required String password}) async {
-    isLoading = true;
-    notifyListeners();
+  Future<void> login({required String user, required String password, required BuildContext context}) async {
+    state = const AsyncValue.loading();
 
-    final token = await _repository.login(
-      username: user,
-      password: password,
-      grantType: 'password',
-      clientId: Environment.clientID,
-      clientSecret: Environment.clientSecret,
+    state = await AsyncValue.guard(
+          () async {
+        final token = await _repository.login(
+          username: user,
+          password: password,
+          grantType: 'password',
+          clientId: Environment.clientID,
+          clientSecret: Environment.clientSecret,
+        );
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('token', 'Bearer ${token.accessToken}');
+        _repository.updateDioHeaders({"Authorization": 'Bearer ${token.accessToken}'});
+        _repository.updateBaseURL(Environment.baseUrlApp);
+
+        context.goNamed(AppRoutes.home);  // Navegación al home después de un login exitoso
+      },
+          (err) => err is! AppException,
     );
-
-    if(!token.error){
-      prefs = await SharedPreferences.getInstance();
-      prefs.setString('token', 'Bearer ${token.data!.accessToken}');
-      _repository.updateDioHeaders({"Authorization":'Bearer ${token.data!.accessToken}'});
-      _repository.updateBaseURL(Environment.baseUrlApp);
-    }
-
-    isLoading = false;
-    notifyListeners();
-    return token;
-  }
-
-  void disposeResources() {
-    isLoading = false;
   }
 }
