@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 class HomeController extends ChangeNotifier {
   bool isLoading = true;
+  final formKey = GlobalKey<FormState>();
+  final TextEditingController nameController = TextEditingController();
 
   late final RepositoryInterface _repository;
   APIResponse<User>? user;
@@ -18,10 +20,18 @@ class HomeController extends ChangeNotifier {
     notifyListeners();
 
     user = await _repository.fetchUser();
+    nameController.text = user?.data?.fullName ?? "";
 
     isLoading = false;
     notifyListeners();
     return user!;
+  }
+
+  void submitForm() {
+    if (formKey.currentState?.validate() ?? false) {
+      user?.data?.fullName = nameController.text;
+      print(user?.data?.toJson());
+    }
   }
 
   void disposeResources() {
