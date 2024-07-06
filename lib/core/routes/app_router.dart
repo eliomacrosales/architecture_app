@@ -1,4 +1,5 @@
 import 'package:architecture/core/constants/app_routes.dart';
+import 'package:architecture/presentation/detail/view/detail_view.dart';
 import 'package:architecture/presentation/home/view/home.dart';
 import 'package:architecture/presentation/login/view/login.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,11 @@ class GoRouterConfig {
         name: AppRoutes.home,
         path: AppRoutes.home,
         builder: (context, state) => HomeScreen(),
+      ),
+      GoRoute(
+        name: AppRoutes.detail,
+        path: AppRoutes.detail,
+        builder: (context, state) => DetailScreen(),
       ),
     ],
     errorBuilder: (context, state) => Center(

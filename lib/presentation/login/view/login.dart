@@ -1,3 +1,4 @@
+import 'package:architecture/core/extensions/localization_extension.dart';
 import 'package:architecture/presentation/login/controller/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,7 +54,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     );
                   }
                 },
-                child: const Text('Login'),
+                child:  Text(context.localization.login),
               ),
               loading: () => const Center(
                 child: CircularProgressIndicator(),
