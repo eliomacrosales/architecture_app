@@ -20,6 +20,14 @@ class HomeScreen extends ConsumerWidget {
     final userAsyncValue = ref.watch(homeControllerProvider);
     final themeController = ref.read(themeControllerProvider.notifier);
     final localeController = ref.read(localeControllerProvider.notifier);
+    final reload = ref.watch(reloadUser);
+
+    if (reload) {
+      Future(() {
+        ref.read(homeControllerProvider.notifier).refreshUser();
+        ref.read(reloadUser.notifier).state = false;
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(

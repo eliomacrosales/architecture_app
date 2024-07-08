@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'detail_controller.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class DetailController extends _$DetailController {
   @override
   Future<User> build() async {
